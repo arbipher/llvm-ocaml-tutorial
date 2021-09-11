@@ -2,7 +2,7 @@ open Core
 
 let context = Llvm.global_context ()
 
-let the_module = Llvm.create_module context "my cool jit"
+let the_module = Llvm.create_module context "main"
 
 let builder = Llvm.builder context
 
