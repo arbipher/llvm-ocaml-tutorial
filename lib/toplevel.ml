@@ -1,5 +1,22 @@
 open Core
 
+let dump_to_object ~the_fpm =
+  Llvm_all_backends.initialize ();
+  (* "x86_64-pc-linux-gnu" *)
+  let target_triple = Llvm_target.Target.default_triple () in
+  let target = Llvm_target.Target.by_triple target_triple in
+  let cpu = "generic" in
+  let reloc_mode = Llvm_target.RelocMode.Default in
+  let machine = Llvm_target.TargetMachine.create ~triple:target_triple ~cpu ~reloc_mode target in
+  let data_layout = Llvm_target.TargetMachine.data_layout machine |> Llvm_target.DataLayout.as_string in
+  Llvm.set_data_layout data_layout Codegen.the_module;
+  let filename = "output.o" in
+  Llvm_target.TargetMachine.add_analysis_passes the_fpm machine;
+  let file_type = Llvm_target.CodeGenFileType.ObjectFile in
+  Llvm_target.TargetMachine.emit_to_file Codegen.the_module file_type filename machine;
+  printf "Wrote %s\n" filename;
+  ()
+
 let run_main in_channel ~the_fpm ~the_execution_engine =
   let anonymous_func_count = ref 0 in
   let supplier =
@@ -52,6 +69,8 @@ let run_main in_channel ~the_fpm ~the_execution_engine =
             Out_channel.flush Out_channel.stdout ;
             (* Print out all the generated code. *)
             Llvm.dump_module Codegen.the_module ;
+            (* Add ch8 *)
+            dump_to_object ~the_fpm;
             exit 0
       with e ->
         (* Skip expression for error recovery. *)

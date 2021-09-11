@@ -9,6 +9,7 @@
   llvm.executionengine
   llvm.target
   llvm.scalar_opts
+  llvm.all_backends
   menhirLib)
  (preprocess
   (pps ppx_jane -allow-unannotated-ignores ppx_expect ppx_let))
