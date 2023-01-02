@@ -2,7 +2,13 @@
  (name kaleidoscope)
  (libraries base kaleidoscope_lib)
  (link_deps
-  (file ../stubs/libbindings.so))
+  (file %{project_root}/stubs/libbindings.so))
  (link_flags -cclib -Lstubs -cclib -lbindings)
  (preprocess
   (pps ppx_jane ppx_expect ppx_let)))
+
+(cram
+ (deps
+  ./kaleidoscope.exe
+  %{project_root}/stubs/libbindings.so
+  %{project_root}/fib.ks))
