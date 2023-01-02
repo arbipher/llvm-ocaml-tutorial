@@ -1,7 +1,10 @@
+# llvm-ocaml-tutorial
+
+The tutorial is tested up to OCaml 4.14.1 and LLVM 14.0.6.
 
 ## Build
 
-```shell
+```console
 # Install the dependencies
 opam install base ctypes-foreign llvm menhir ppx_jane
 
@@ -14,11 +17,15 @@ export LD_LIBRARY_PATH=_build/default/stubs
 
 ## Run
 
-`dune exec bin/kaleidoscope.exe < example/mandel.kal`
+```console
+dune exec bin/kaleidoscope.exe < example/mandel.kal
+```
 
 ## Test
 
-`dune test`
+```console
+dune test
+```
 
 ## Meta
 
