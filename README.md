@@ -1,17 +1,28 @@
-## Meta
-
-The project is forked from https://github.com/adamrk/llvm-ocaml-tutorial.
 
 ## Build
 
-`opam install core async ctypes-foreign llvm menhir`
+```shell
+# Install the dependencies
+opam install base ctypes-foreign llvm menhir ppx_jane
 
-`export LD_LIBRARY_PATH=/path/to(/libbindings.so)`
+# Build the shared library
+dune build stubs/libbindings.so
 
-The path is `_build/default/stubs/libbindings.so` by default.
-
-`export LD_LIBRARY_PATH=/mnt/d/studio/play/llvm-ocaml-tutorial/_build/default/stubs`
+# Add the shared library to path
+export LD_LIBRARY_PATH=_build/default/stubs
+```
 
 ## Run
 
-`./path/to/bin/kaleidoscope.exe < example/mandel.kal`
+`dune exec bin/kaleidoscope.exe < example/mandel.kal`
+
+## Test
+
+`dune test`
+
+## Meta
+
+Thank to @Kakadu's PR.
+
+The project is originally forked from https://github.com/adamrk/llvm-ocaml-tutorial.
+

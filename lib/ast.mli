@@ -1,4 +1,4 @@
-open Core
+open Base
 
 type token =
   | DEF
@@ -60,7 +60,5 @@ end
 type func = Function of proto * Expr.t [@@deriving sexp]
 
 val func_of_no_binop_func : Expr.No_binop.func -> func
-
 val set_func_name : string -> func -> func
-
 val binop_precedence : (char, int) Hashtbl.t

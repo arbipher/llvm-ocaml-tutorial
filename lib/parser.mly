@@ -18,18 +18,18 @@
 %token SEMICOLON
 %token EOF
 
-%{ 
+%{
   open Ast
   (* get the precedence of the binary operator token. *)
-  let precedence c = 
-    match Base.Hashtbl.find binop_precedence c with 
+  let precedence c =
+    match Base.Hashtbl.find binop_precedence c with
     | None -> -1
     | Some p -> p
 %}
 
-%start < [`Expr of Ast.Expr.No_binop.func 
-         | `Extern of Ast.proto 
-         | `Def of Ast.Expr.No_binop.func 
+%start < [`Expr of Ast.Expr.No_binop.func
+         | `Extern of Ast.proto
+         | `Def of Ast.Expr.No_binop.func
          | `Eof ]> toplevel
 %%
 
@@ -39,21 +39,21 @@
  *   ::= definition *)
 toplevel:
   | e = expr; SEMICOLON { `Expr (Expr.No_binop.Function (Prototype ("", []), e)) }
-  | e = extern; SEMICOLON { `Extern e } 
+  | e = extern; SEMICOLON { `Extern e }
   | d = definition; SEMICOLON { `Def d }
   | EOF { `Eof }
   ;
-  
+
   (* primary
    *   ::= number
    *   ::= '(' expr ')'
    *   ::= identifier '(' expression? (',' expression)* ')'
    *   ::= identifier *)
 primary:
-  | f = NUMBER 
+  | f = NUMBER
     { Expr.No_binop.Number f }
   | LEFT_PAREN; e = expr; RIGHT_PAREN { e }
-  | id = IDENT; args = delimited(LEFT_PAREN, separated_list(COMMA, expr), RIGHT_PAREN) 
+  | id = IDENT; args = delimited(LEFT_PAREN, separated_list(COMMA, expr), RIGHT_PAREN)
     {  Expr.No_binop.Call (id, args) }
   | id = IDENT; { Expr.No_binop.Variable id }
   ;
@@ -61,12 +61,12 @@ primary:
   (* block
    *   ::= 'if' expr 'then' expr 'else' expr
    *   ::= 'for' identifier '=' expr ',' expr (',' expr)? 'in' expr
-   *   ::= 'var' identifier ('=' expr)? 
-   *             (',' identifier ('=' expr)?)* 'in' expr *) 
+   *   ::= 'var' identifier ('=' expr)?
+   *             (',' identifier ('=' expr)?)* 'in' expr *)
 block:
   | IF; c = expr; THEN; t = expr; ELSE; e = expr { Expr.No_binop.If (c, t, e) }
-  | FOR; id = IDENT; EQUALS; start = expr; COMMA; end_ = expr; 
-    step = option(COMMA; e = expr { e }); IN; body = expr 
+  | FOR; id = IDENT; EQUALS; start = expr; COMMA; end_ = expr;
+    step = option(COMMA; e = expr { e }); IN; body = expr
     { Expr.No_binop.For (id, start, end_, step, body) }
   | VAR; vars = separated_nonempty_list(COMMA, var); IN; body = expr
     { Expr.No_binop.Var (vars, body) }
@@ -79,7 +79,7 @@ var: name = IDENT; e = option(EQUALS; e = expr { e }) { (name, e) }
   (* unary
    *   ::= primary
    *   ::= op expr_without_rhs *)
-unary: 
+unary:
   | op = operator; operand = unary { Expr.No_binop.Unary (op, operand) }
   | e = primary                    { e }
   ;
@@ -87,8 +87,8 @@ unary:
   (* right_hand_side
    *   ::= op unary_op unary
    *   ::= op primary *)
-rhs: 
-  | op = operator; unop = operator; e = unary 
+rhs:
+  | op = operator; unop = operator; e = unary
     { (op, precedence op, Expr.No_binop.Unary (unop, e)) }
   | op = operator; e = primary
     { (op, precedence op, e ) }
@@ -97,11 +97,11 @@ rhs:
   (* expression
    *   ::= unary (right_hand_side)*
    *   ::= block *)
-expr: 
-  | lhs = unary; rest = list(rhs) 
+expr:
+  | lhs = unary; rest = list(rhs)
     { match rest with
       | [] -> lhs
-      | _  -> Expr.No_binop.Bin_list (lhs, rest) 
+      | _  -> Expr.No_binop.Bin_list (lhs, rest)
     }
   | e = block { e }
   ;
@@ -113,21 +113,21 @@ expr:
 prototype:
   | name = IDENT; args = delimited(LEFT_PAREN, list(IDENT), RIGHT_PAREN)
     { Prototype (name, args) }
-  | kind = operator_kind; op = operator; prec = precedence; 
-    args = delimited(LEFT_PAREN, list(IDENT), RIGHT_PAREN) 
+  | kind = operator_kind; op = operator; prec = precedence;
+    args = delimited(LEFT_PAREN, list(IDENT), RIGHT_PAREN)
     { let open Base in
       match kind with
-      | `Binary -> 
-          if Int.(<>) (List.length args) 2 
-          then raise_s 
+      | `Binary ->
+          if Int.(<>) (List.length args) 2
+          then raise_s
             [%message "binary operator should have 2 arguments" (args : string list)]
-          else 
+          else
             Ast.BinOpPrototype ("binary" ^ String.of_char op, args, prec)
       | `Unary ->
-          if Int.(<>) (List.length args) 1 
-          then raise_s 
+          if Int.(<>) (List.length args) 1
+          then raise_s
             [%message "unary operator should have 1 argument" (args : string list)]
-          else 
+          else
             Ast.Prototype ("unary" ^ String.of_char op, args)
     }
   ;
@@ -154,4 +154,3 @@ definition:
 
   (* external ::= 'extern' prototype *)
 extern: EXTERN; proto = prototype { proto }
-

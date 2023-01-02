@@ -1,8 +1,6 @@
 (library
  (name kaleidoscope_lib)
  (libraries
-  async
-  core
   ctypes.foreign
   llvm
   llvm.analysis
@@ -10,9 +8,10 @@
   llvm.target
   llvm.scalar_opts
   llvm.all_backends
+  stdio
   menhirLib)
  (preprocess
-  (pps ppx_jane -allow-unannotated-ignores ppx_expect ppx_let))
+  (pps ppx_jane ppx_expect ppx_let))
  (inline_tests))
 
 (ocamllex lexer)

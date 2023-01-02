@@ -1,0 +1,40 @@
+name: Build master
+
+on:
+  push:
+    branches:
+      - "master"
+
+env:
+  OPAMROOT: /home/opam/.opam
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+    container:
+      image: ocaml/opam:ubuntu-lts-ocaml-4.14
+      options: --user root
+
+    steps:
+      - run: opam --version
+      - run: opam-2.1 --version
+      - run: opam exec -- ocamlopt --version
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
+
+      # checking out the code seems to be important because local switch is used
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      # docker has opam 2.0.x where depext is not yet integrated
+      - run: opam depext  llvm base ppx_jane ctypes-foreign menhir ppx_expect ppx_inline_test --yes
+      - run: opam install llvm base ppx_jane ctypes-foreign menhir ppx_expect ppx_inline_test --yes
+      - run: opam exec -- dune build @default --profile=release
+      - run: opam exec -- dune test --profile=release
