@@ -1,4 +1,6 @@
 _build
+_opam
 .merlin
 *.swp
 *.so
+*.o

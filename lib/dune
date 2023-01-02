@@ -1,7 +1,6 @@
 (library
  (name kaleidoscope_lib)
  (libraries
-  ;async
   ctypes.foreign
   llvm
   llvm.analysis

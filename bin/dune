@@ -5,7 +5,7 @@
   (file %{project_root}/stubs/libbindings.so))
  (link_flags -cclib -Lstubs -cclib -lbindings)
  (preprocess
-  (pps ppx_jane ppx_expect ppx_let)))
+  (pps ppx_jane ppx_expect)))
 
 (cram
  (deps

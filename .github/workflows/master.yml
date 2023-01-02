@@ -34,7 +34,7 @@ jobs:
           fetch-depth: 1
 
       # docker has opam 2.0.x where depext is not yet integrated
-      - run: opam depext  llvm base ppx_jane ctypes-foreign menhir ppx_expect ppx_jane ppx_inline_test --yes
-      - run: opam install llvm base ppx_jane ctypes-foreign menhir ppx_expect ppx_jane ppx_inline_test --yes
+      - run: opam depext  llvm base ppx_jane ctypes-foreign menhir ppx_expect ppx_inline_test --yes
+      - run: opam install llvm base ppx_jane ctypes-foreign menhir ppx_expect ppx_inline_test --yes
       - run: opam exec -- dune build @default --profile=release
       - run: opam exec -- dune test --profile=release
