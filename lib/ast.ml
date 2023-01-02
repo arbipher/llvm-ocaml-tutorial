@@ -1,4 +1,4 @@
-open Core
+open Base
 
 type token =
   (* commands *)
@@ -48,7 +48,7 @@ module Expr = struct
       | Variable of string
       (* variant for a unary operator. *)
       | Unary of char * t
-      (* variant for a sequence binary operators, they still need to be 
+      (* variant for a sequence binary operators, they still need to be
        * associated based operator precedence. *)
       | Bin_list of t * (char * int * t) list
       (* variant for function calls. *)
@@ -62,10 +62,10 @@ module Expr = struct
     [@@deriving sexp]
 
     (* func - This type represents a function definition itself (still needing
-     * association of binops).  *)
+     * association of binops). *)
     type func = Function of proto * t [@@deriving sexp]
 
-    (* group the two highest terms joined by the higest precedence operator 
+    (* group the two highest terms joined by the higest precedence operator
      * into a single term and then recurse until there is one term. *)
     let rec reduce first rest =
       match rest with
@@ -73,13 +73,14 @@ module Expr = struct
           let index =
             (* search for the index of the operator with highest precedence *)
             List.foldi tail ~init:(first_op, first_prec, 0)
-              ~f:(fun new_inx
-                 (highest_op, highest_prec, inx)
-                 (new_op, new_prec, _new_expr)
+              ~f:(fun
+                   new_inx
+                   (highest_op, highest_prec, inx)
+                   (new_op, new_prec, _new_expr)
                  ->
                 if Int.( > ) new_prec highest_prec then
                   (new_op, new_prec, new_inx + 1)
-                else (highest_op, highest_prec, inx) )
+                else (highest_op, highest_prec, inx))
             |> fun (_, _, index) -> index
           in
           match index with
@@ -87,7 +88,7 @@ module Expr = struct
            * into new [first] and set [rest] to [tail rest]. *)
           | 0 ->
               let to_reduce = List.hd_exn rest in
-              let expr = Bin_list (first, [to_reduce]) in
+              let expr = Bin_list (first, [ to_reduce ]) in
               reduce expr (List.tl_exn rest)
           (* if it's index n > 0 then combine the terms at index [n] and [n-1]
            * into the new [rest]. *)
@@ -95,11 +96,10 @@ module Expr = struct
               let to_reduce = List.nth_exn rest n in
               let prev_op, prev_prec, prev_expr = List.nth_exn rest (n - 1) in
               let new_expr =
-                (prev_op, prev_prec, Bin_list (prev_expr, [to_reduce]))
+                (prev_op, prev_prec, Bin_list (prev_expr, [ to_reduce ]))
               in
               reduce first
-                (List.take rest (n - 1) @ (new_expr :: List.drop rest (n + 1)))
-          )
+                (List.take rest (n - 1) @ (new_expr :: List.drop rest (n + 1))))
       (* once there's only one term left we're done *)
       | [] -> first
   end
@@ -131,19 +131,19 @@ module Expr = struct
         If (of_no_binop if_, of_no_binop then_, of_no_binop else_)
     | No_binop.For (id, start, end_, step, body) ->
         For
-          ( id
-          , of_no_binop start
-          , of_no_binop end_
-          , Option.map step ~f:of_no_binop
-          , of_no_binop body )
+          ( id,
+            of_no_binop start,
+            of_no_binop end_,
+            Option.map step ~f:of_no_binop,
+            of_no_binop body )
     | No_binop.Unary (c, t) -> Unary (c, of_no_binop t)
     | No_binop.Var (vars, body) ->
         Var
           ( List.map vars ~f:(fun (name, expr) ->
-                (name, Option.map expr ~f:of_no_binop) )
-          , of_no_binop body )
+                (name, Option.map expr ~f:of_no_binop)),
+            of_no_binop body )
     | No_binop.Bin_list (first, []) -> of_no_binop first
-    | No_binop.Bin_list (first, [(op, _prec, second)]) ->
+    | No_binop.Bin_list (first, [ (op, _prec, second) ]) ->
         Binary (op, of_no_binop first, of_no_binop second)
     | No_binop.Bin_list (first, rest) ->
         of_no_binop (No_binop.reduce first rest)
@@ -151,25 +151,26 @@ module Expr = struct
   let%expect_test _ =
     let no_binop =
       No_binop.Bin_list
-        ( No_binop.Variable "x"
-        , [('*', 40, No_binop.Variable "y"); ('+', 20, No_binop.Variable "z")]
+        ( No_binop.Variable "x",
+          [ ('*', 40, No_binop.Variable "y"); ('+', 20, No_binop.Variable "z") ]
         )
     in
-    printf !"%{sexp: t}" (of_no_binop no_binop) ;
-    [%expect
-      {| (Binary + (Binary * (Variable x) (Variable y)) (Variable z)) |}] ;
+    Caml.Format.printf !"%{sexp: t}" (of_no_binop no_binop);
+    [%expect {| (Binary + (Binary * (Variable x) (Variable y)) (Variable z)) |}];
     let no_binop =
       No_binop.Bin_list
-        ( No_binop.Variable "x"
-        , [ ('*', 40, No_binop.Variable "y")
-          ; ('+', 20, No_binop.Variable "z")
-          ; ('*', 40, No_binop.Variable "w") ] )
+        ( No_binop.Variable "x",
+          [
+            ('*', 40, No_binop.Variable "y");
+            ('+', 20, No_binop.Variable "z");
+            ('*', 40, No_binop.Variable "w");
+          ] )
     in
-    printf !"%{sexp: t}" (of_no_binop no_binop) ;
+    Caml.Format.printf !"%{sexp: t}" (of_no_binop no_binop);
     [%expect
-      {| 
-      (Binary + (Binary * (Variable x) (Variable y)) 
-       (Binary * (Variable z) (Variable w))) 
+      {|
+      (Binary + (Binary * (Variable x) (Variable y))
+       (Binary * (Variable z) (Variable w)))
     |}]
 end
 

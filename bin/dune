@@ -1,6 +1,6 @@
 (executable
  (name kaleidoscope)
- (libraries async core kaleidoscope_lib)
+ (libraries base kaleidoscope_lib)
  (link_deps
   (file ../stubs/libbindings.so))
  (link_flags -cclib -Lstubs -cclib -lbindings)
