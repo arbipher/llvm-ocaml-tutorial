@@ -1,0 +1,12 @@
+(library
+ (name lang_ks)
+ (libraries base menhirLib)
+ (preprocess
+  (pps ppx_jane ppx_expect ppx_let))
+ (inline_tests))
+
+(ocamllex lexer)
+
+(menhir
+ (flags --external-tokens Ast --explain --table)
+ (modules parser))

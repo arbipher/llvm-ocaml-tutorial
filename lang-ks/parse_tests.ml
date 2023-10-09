@@ -1,11 +1,11 @@
 open Base
-open Caml.Format
 
 let print_parsed s =
-  printf
-    !"%{sexp: [`Expr of Ast.Expr.No_binop.func | `Extern of Ast.proto | `Def \
-      of Ast.Expr.No_binop.func | `Eof ]}"
+  Stdlib.Format.printf
+    !"%{sexp: [`Expr of Ast.Expr.No_binop.func | `Extern of Ast.proto | `Def of \
+      Ast.Expr.No_binop.func | `Eof ]}"
     (Parser.toplevel Lexer.read (Lexing.from_string s))
+;;
 
 let%expect_test _ =
   print_parsed "LHS < RHS;";
@@ -66,3 +66,4 @@ let%expect_test _ =
   [%expect {| (Expr (Function (Prototype "" ()) (Call foo ((Number 2))))) |}];
   print_parsed "extern sin(x);";
   [%expect {| (Extern (Prototype sin (x))) |}]
+;;

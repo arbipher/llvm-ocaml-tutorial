@@ -1,14 +1,27 @@
 (executable
- (name kaleidoscope)
- (libraries base kaleidoscope_lib)
+ (name kaleidoscope_14)
+ (modules kaleidoscope_14)
+ (libraries kaleidoscope_lib_14)
  (link_deps
   (file %{project_root}/stubs/libbindings.so))
- (link_flags -cclib -Lstubs -cclib -lbindings)
- (preprocess
-  (pps ppx_jane ppx_expect)))
+ (link_flags -cclib -Lstubs -cclib -lbindings))
+
+(cram
+ (deps
+  ./kaleidoscope_14.exe
+  %{project_root}/stubs/libbindings.so
+  %{project_root}/example/fib.ks))
+
+(executable
+ (name kaleidoscope)
+ (modules kaleidoscope)
+ (libraries kaleidoscope_lib)
+ (link_deps
+  (file %{project_root}/stubs/libbindings.so))
+ (link_flags -cclib -Lstubs -cclib -lbindings))
 
 (cram
  (deps
   ./kaleidoscope.exe
   %{project_root}/stubs/libbindings.so
-  %{project_root}/fib.ks))
+  %{project_root}/example/fib.ks))

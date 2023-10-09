@@ -4,3 +4,5 @@ _opam
 *.swp
 *.so
 *.o
+*.exe
+*.out

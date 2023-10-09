@@ -54,7 +54,7 @@ let rec codegen_expr = function
     (match Hashtbl.find named_values name with
      | None -> raise_s [%message "unkown variable name" (name : string)]
      (* Load the value *)
-     | Some v -> Llvm.build_load double_type v name builder)
+     | Some v -> Llvm.build_load v name builder)
   | Ast.Expr.Binary ('=', lhs, rhs) ->
     (* Special case '=' because we don't want to emit the LHS as an
      * expression. *)
@@ -93,10 +93,7 @@ let rec codegen_expr = function
          | Some callee -> callee
          | None -> raise_s [%message "unrecognized binop" (op : char)]
        in
-       let fnty =
-         Llvm.function_type double_type (Array.of_list [ double_type; double_type ])
-       in
-       Llvm.build_call fnty callee [| lhs_val; rhs_val |] "binop" builder)
+       Llvm.build_call callee [| lhs_val; rhs_val |] "binop" builder)
   | Ast.Expr.Call (callee_name, args) ->
     (* Look up the name in the module table. *)
     let callee =
@@ -109,9 +106,7 @@ let rec codegen_expr = function
     then ()
     else raise_s [%message "incorrect number of arguments" (callee_name : string)];
     let args = Array.map (Array.of_list args) ~f:codegen_expr in
-    let arg_typs = Array.map args ~f:(Fn.const double_type) in
-    let fnty = Llvm.function_type double_type arg_typs in
-    Llvm.build_call fnty callee args "calltmp" builder
+    Llvm.build_call callee args "calltmp" builder
   | Ast.Expr.If (condition, then_, else_) ->
     let cond = codegen_expr condition in
     (* Convert condition to a bool by comparing equal to 0.0 *)
@@ -208,7 +203,7 @@ let rec codegen_expr = function
     let end_cond = codegen_expr end_ in
     (* Reload, increment, and restore the alloca. This handles the case where
      * the body of the loop mutates the variable. *)
-    let cur_var = Llvm.build_load double_type alloca var_name builder in
+    let cur_var = Llvm.build_load alloca var_name builder in
     let next_var = Llvm.build_fadd cur_var step_val "nextvar" builder in
     Llvm.build_store next_var alloca builder |> ignore;
     (* Convert condition to a bool by comparing equal to 0.0. *)
@@ -234,8 +229,7 @@ let rec codegen_expr = function
       | Some callee -> callee
       | None -> raise_s [%message "unknown unary operator" (op : char)]
     in
-    let fnty = Llvm.function_type double_type (Array.of_list [ double_type ]) in
-    Llvm.build_call fnty callee [| operand |] "unop" builder
+    Llvm.build_call callee [| operand |] "unop" builder
 ;;
 
 let codegen_proto_existing = function
